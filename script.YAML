@@ -1,0 +1,58 @@
+# Code sheet for grading of week 1 SQL + Docker homework
+
+# Solution 1:
+
+docker build --help
+
+# Solution 2:
+
+docker run -it python:3.9 bash
+
+pip list
+
+# load the data into postgres
+docker run -it --name postgresql -e 
+   POSTGRES_USER="root" -e 
+   POSTGRES_PASSWORD="root" -e 
+   POSTGRES_DB="green_taxi" -v 
+   C:/Documents/git/data-engineering-zoomcamp/week_1_basics_n_setup/week_homework -p 
+   5432:5432 
+postgres
+
+from sqlalchemy import create_engine
+import pandas as pd
+engine = create_engine('postgresql://root:root@localhost:5432/green_taxi')
+engine.connect()
+
+df1 = pd.read_csv('green_tripdata_2019-01.csv')
+df1.lpep_pickup_datetime = pd.to_datetime(df1.lpep_pickup_datetime)
+df1.lpep_dropoff_datetime = pd.to_datetime(df1.lpep_dropoff_datetime)
+print(pd.io.sql.get_schema(df1, name= 'green_tripdata', con=engine))
+df1.to_sql(name = 'green_tripdata',con=engine, if_exists= 'replace')
+
+df2 = pd.read_csv('taxi+_zone_lookup.csv')
+print(pd.io.sql.get_schema(df2, name= 'green_taxi_zone', con=engine))
+df2.to_sql(name = 'green_taxi_zone', con=engine, if_exists='replace')
+
+
+# Solution 3:
+
+SELECT COUNT(lpep_pickup_datetime), COUNT(lpep_dropoff_datetime) 
+FROM green_tripdata 
+WHERE lpep_pickup_datetime BETWEEN '2019-01-15 00:00:01' AND '2019-01-15 24:00:00'
+
+# Solution 4:
+
+SELECT MAX(trip_distance),  lpep_dropoff_datetime 
+FROM green_tripdata 
+GROUP BY  lpep_dropoff_datetime 
+ORDER BY MAX(trip_distance) DESC
+
+# Solution 5:
+
+SELECT COUNT(lpep_pickup_datetime), passenger_count
+FROM green_tripdata 
+WHERE passenger_count >= 2 AND passenger_count <=3 AND lpep_pickup_datetime BETWEEN '2019-01-01 00:00:00' AND '2019-01-01 24:00:00' 
+GROUP BY passenger_count
+
+# Solution 6:
